@@ -16,7 +16,7 @@ TaskMaster adalah platform manajemen tugas (task management) kolaboratif modern 
 
 - **Monorepo**: Turbo, pnpm
 - **Backend**: Node.js, Express, Drizzle ORM, PostgreSQL, Socket.io, Better Auth, Nodemailer (Gmail SMTP).
-- **Frontend**: React, Vite, Tailwind CSS, Lucide React, Radix UI.
+- **Frontend**: React, Vite, Tanstack Query, Tailwind CSS, Lucide React, Radix UI.
 - **Lainnya**: Sentry (monitoring), Cloudinary (storage), Zod (validasi).
 
 ## 🔄 App Flow
