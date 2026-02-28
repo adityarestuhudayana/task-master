@@ -26,6 +26,7 @@ export const auth = betterAuth({
             httpOnly: true,
             partitioned: true,
         },
+        trustProxy: true,
     },
     socialProviders: {
         google: {
@@ -65,5 +66,5 @@ export const auth = betterAuth({
             },
         },
     },
-    trustedOrigins: [process.env.CORS_ORIGIN || "http://localhost:5173"],
+    trustedOrigins: [env.CORS_ORIGIN],
 })
