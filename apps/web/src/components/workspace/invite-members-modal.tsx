@@ -1,36 +1,34 @@
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { inviteMemberSchema, type InviteMemberValues } from "@/lib/validators"
-import { useWorkspaceMembers, useInviteMember, useWorkspaces } from "@/hooks/use-workspaces"
+import { useWorkspaceMembers, useRegenerateInviteCode, useWorkspaces } from "@/hooks/use-workspaces"
 import { useUIStore } from "@/stores/ui-store"
-import { X, UserPlus, Send, Mail } from "lucide-react"
+import { X, UserPlus, Link, Copy, RefreshCw, Check } from "lucide-react"
 import { UserAvatar } from "../common/user-avatar"
 import { getUserColor } from "@/lib/utils"
+import { useState } from "react"
 
 export function InviteMembersModal() {
     const { inviteMembersOpen, inviteMembersId, closeInviteMembers } = useUIStore()
     const { data: workspaces = [] } = useWorkspaces()
     const { data: members = [] } = useWorkspaceMembers(inviteMembersId || "")
-    const inviteMember = useInviteMember(inviteMembersId || "")
+    const regenerateInvite = useRegenerateInviteCode(inviteMembersId || "")
+    const [copied, setCopied] = useState(false)
 
     const currentWorkspace = workspaces.find((w: any) => w.id === inviteMembersId)
+    const isAdmin = members.find((m: any) => m.id === currentWorkspace?.ownerId)?.role === "owner" || false // Simplified check
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors, isSubmitting },
-    } = useForm<InviteMemberValues>({
-        resolver: zodResolver(inviteMemberSchema),
-    })
+    const inviteLink = currentWorkspace?.inviteCode
+        ? `${window.location.origin}/join/${currentWorkspace.inviteCode}`
+        : "Generating link..."
 
-    const onInvite = async (data: InviteMemberValues) => {
-        try {
-            await inviteMember.mutateAsync(data)
-            reset()
-        } catch {
-            // Error handled by mutation
-        }
+    const handleCopy = () => {
+        if (!currentWorkspace?.inviteCode) return
+        navigator.clipboard.writeText(inviteLink)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+    }
+
+    const handleRegenerate = async () => {
+        if (!inviteMembersId) return
+        await regenerateInvite.mutateAsync()
     }
 
     if (!inviteMembersOpen) return null
@@ -50,7 +48,7 @@ export function InviteMembersModal() {
                         </div>
                         <div>
                             <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                                Workspace Settings
+                                Workspace Invite Link
                             </h2>
                             <p className="text-[10px] md:text-xs text-slate-500">
                                 {currentWorkspace?.name || "Workspace"}
@@ -67,41 +65,49 @@ export function InviteMembersModal() {
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     <div className="px-5 md:px-6 py-5 md:py-6 space-y-5 md:space-y-6">
-                        {/* Invite Section */}
+                        {/* Invite Link Section */}
                         <div className="space-y-3">
                             <div>
                                 <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white mb-0.5">
-                                    Invite Members
+                                    Share Invite Link
                                 </h3>
                                 <p className="text-[11px] md:text-xs text-slate-500">
-                                    Add new members by email address.
+                                    Anyone with this link can join the workspace.
                                 </p>
                             </div>
-                            <form onSubmit={handleSubmit(onInvite)} className="flex flex-col sm:flex-row gap-2">
-                                <div className="relative flex-1">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                        <Mail size={16} />
+
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="relative flex-1">
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                            <Link size={16} />
+                                        </div>
+                                        <input
+                                            readOnly
+                                            value={inviteLink}
+                                            className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none"
+                                        />
                                     </div>
-                                    <input
-                                        {...register("email")}
-                                        placeholder="name@company.com"
-                                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-primary transition outline-none"
-                                    />
-                                    {errors.email && (
-                                        <span className="absolute -bottom-4 left-0 text-[9px] text-red-500 font-medium">
-                                            {errors.email.message}
-                                        </span>
-                                    )}
+                                    <button
+                                        onClick={handleCopy}
+                                        disabled={!currentWorkspace?.inviteCode}
+                                        className="h-[42px] px-4 rounded-lg bg-primary hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-md shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                                        {copied ? "Copied" : "Copy"}
+                                    </button>
                                 </div>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="px-4 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-md shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-1.5 group whitespace-nowrap"
-                                >
-                                    Invite
-                                    <Send size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                </button>
-                            </form>
+                                {isAdmin && (
+                                    <button
+                                        onClick={handleRegenerate}
+                                        disabled={regenerateInvite.isPending}
+                                        className="text-xs text-slate-500 hover:text-primary transition-colors flex items-center gap-1.5 mt-1 self-start"
+                                    >
+                                        <RefreshCw size={12} className={regenerateInvite.isPending ? "animate-spin" : ""} />
+                                        Generate new link (invalidates old link)
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <div className="h-px bg-slate-100 dark:bg-slate-700" />
@@ -138,6 +144,12 @@ export function InviteMembersModal() {
                                                 <p className="text-[10px] md:text-[11px] text-slate-500 font-medium truncate">{member.email}</p>
                                             </div>
                                         </div>
+                                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${member.role === "owner"
+                                                ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
+                                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                                            }`}>
+                                            {member.role}
+                                        </span>
                                     </div>
                                 ))}
                                 {members.length === 0 && (

@@ -38,10 +38,19 @@ export class WorkspaceController {
         }
     }
 
-    static async inviteMember(req: Request, res: Response, next: NextFunction) {
+    static async regenerateInviteCode(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await WorkspaceService.inviteMember(req.params.id as string, req.body, req.user!.name)
-            res.status(201).json(result)
+            const result = await WorkspaceService.regenerateInviteCode(req.params.id as string, req.user!.id)
+            res.json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    static async joinWorkspace(req: Request, res: Response, next: NextFunction) {
+        try {
+            const result = await WorkspaceService.joinWorkspace(req.params.inviteCode as string, req.user!.id)
+            res.status(200).json(result)
         } catch (error) {
             next(error)
         }

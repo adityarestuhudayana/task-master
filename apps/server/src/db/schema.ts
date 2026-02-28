@@ -62,6 +62,7 @@ export const workspaces = pgTable("workspaces", {
     description: text("description"),
     icon: varchar("icon", { length: 50 }),
     ownerId: text("owner_id").notNull().references(() => users.id),
+    inviteCode: varchar("invite_code", { length: 50 }).unique(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 })

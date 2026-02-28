@@ -48,14 +48,25 @@ export function useDeleteWorkspace() {
     })
 }
 
-export function useInviteMember(workspaceId: string) {
+export function useRegenerateInviteCode(workspaceId: string) {
     const qc = useQueryClient()
     return useMutation({
-        mutationFn: async (body: { email: string }) => {
-            const { data } = await api.post(`/workspaces/${workspaceId}/invite`, body)
+        mutationFn: async () => {
+            const { data } = await api.post(`/workspaces/${workspaceId}/invite-code`)
             return data
         },
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["workspaces", workspaceId, "members"] }),
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["workspaces"] }),
+    })
+}
+
+export function useJoinWorkspace() {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn: async (inviteCode: string) => {
+            const { data } = await api.post(`/workspaces/join/${inviteCode}`)
+            return data
+        },
+        onSuccess: () => qc.invalidateQueries({ queryKey: ["workspaces"] }),
     })
 }
 

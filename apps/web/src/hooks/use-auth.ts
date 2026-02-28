@@ -27,10 +27,10 @@ export function useDashboardData() {
 
 export function useGoogleLogin() {
     return useMutation({
-        mutationFn: async () => {
+        mutationFn: async (callbackURL?: string) => {
             const { data } = await api.post("/auth/sign-in/social", {
                 provider: "google",
-                callbackURL: `${window.location.origin}/dashboard`
+                callbackURL: callbackURL || `${window.location.origin}/dashboard`
             })
             if (data?.url) {
                 window.location.href = data.url

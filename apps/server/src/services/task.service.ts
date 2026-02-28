@@ -49,14 +49,16 @@ export class TaskService {
             }).returning()
 
             if (data.assigneeIds && data.assigneeIds.length > 0) {
-                await db.insert(notifications).values(
-                    data.assigneeIds
-                        .filter(uid => uid !== userId)
-                        .map(uid => ({
-                            userId: uid,
-                            activityId: log.id
-                        }))
-                )
+                const filteredAssignees = data.assigneeIds
+                    .filter(uid => uid !== userId)
+                    .map(uid => ({
+                        userId: uid,
+                        activityId: log.id
+                    }))
+
+                if (filteredAssignees.length > 0) {
+                    await db.insert(notifications).values(filteredAssignees)
+                }
             }
 
             if (io) {

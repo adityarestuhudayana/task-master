@@ -1,17 +1,18 @@
-import { useNavigate } from "react-router-dom"
 import { useGoogleLogin } from "@/hooks/use-auth"
 import { useState } from "react"
-import { CheckSquare, LogIn } from "lucide-react"
+import { useLocation } from "react-router-dom"
+import { CheckCircle } from "lucide-react"
 
 export function LoginPage() {
-    const navigate = useNavigate()
     const googleLogin = useGoogleLogin()
     const [apiError, setApiError] = useState("")
+    const location = useLocation()
+    const from = location.state?.from?.pathname || "/dashboard"
 
     const onGoogleLogin = async () => {
         setApiError("")
         try {
-            await googleLogin.mutateAsync()
+            await googleLogin.mutateAsync(`${window.location.origin}${from}`)
         } catch (err: any) {
             setApiError("Failed to login with Google. Please try again.")
         }
@@ -25,12 +26,12 @@ export function LoginPage() {
             <div className="p-8 sm:p-10">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary mb-4">
-                        <CheckSquare size={24} />
+                    <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle size={32} className="text-primary" />
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                            TaskMaster
+                        </h1>
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
-                        TaskMaster
-                    </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm">
                         Welcome back to your workspace
                     </p>

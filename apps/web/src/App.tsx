@@ -9,6 +9,7 @@ import { LandingPage } from "@/pages/landing"
 import { LoginPage } from "@/pages/login"
 import { SignupPage } from "@/pages/signup"
 import { DashboardPage } from "@/pages/dashboard"
+import { JoinWorkspacePage } from "@/pages/join"
 import { BoardPage } from "@/pages/board"
 import { SettingsPage } from "@/pages/settings"
 import { NotFoundPage } from "@/pages/not-found"
@@ -86,6 +87,7 @@ function App() {
               <Route path="w/:workspaceId/b/:boardId" element={<BoardPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
+            <Route path="/join/:inviteCode" element={<JoinWorkspacePage />} />
           </Route>
 
           {/* 404 */}

@@ -1,12 +1,25 @@
-import { useState } from "react"
-import { Bell, Check, Clock, User, MessageSquare, AlertCircle } from "lucide-react"
+import { useState, useRef, useCallback } from "react"
+import { Bell, Check, Clock, User, MessageSquare, AlertCircle, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/use-notifications"
 import { formatDistanceToNow } from "date-fns"
 
 export function NotificationPopover() {
     const [isOpen, setIsOpen] = useState(false)
-    const { data: notifications = [] } = useNotifications()
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useNotifications()
+    const notifications = data?.pages.flatMap(page => page.data) || []
+
+    const observer = useRef<IntersectionObserver | null>(null)
+    const lastElementRef = useCallback((node: HTMLDivElement | null) => {
+        if (isFetchingNextPage) return
+        if (observer.current) observer.current.disconnect()
+        observer.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage) {
+                fetchNextPage()
+            }
+        })
+        if (node) observer.current.observe(node)
+    }, [isFetchingNextPage, hasNextPage, fetchNextPage])
     const markRead = useMarkNotificationRead()
     const markAllRead = useMarkAllNotificationsRead()
 
@@ -114,6 +127,11 @@ export function NotificationPopover() {
                                             )}
                                         </div>
                                     ))}
+                                    {hasNextPage && (
+                                        <div ref={lastElementRef} className="py-4 flex justify-center">
+                                            <Loader2 size={16} className="animate-spin text-primary" />
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

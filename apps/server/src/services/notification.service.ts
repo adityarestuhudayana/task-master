@@ -1,11 +1,16 @@
 import { db } from "../db/index.js"
 import { notifications, activity, users } from "../db/schema.js"
-import { eq, and, desc } from "drizzle-orm"
+import { eq, and, desc, lt } from "drizzle-orm"
 import { AppError } from "../utils/AppError.js"
 
 export class NotificationService {
-    static async getNotifications(userId: string) {
-        return await db
+    static async getNotifications(userId: string, cursor?: string, limit: number = 20) {
+        let conditions = eq(notifications.userId, userId)
+        if (cursor) {
+            conditions = and(conditions, lt(notifications.createdAt, new Date(cursor))) as any
+        }
+
+        const data = await db
             .select({
                 id: notifications.id,
                 isRead: notifications.isRead,
@@ -24,9 +29,19 @@ export class NotificationService {
             .from(notifications)
             .innerJoin(activity, eq(notifications.activityId, activity.id))
             .innerJoin(users, eq(activity.userId, users.id))
-            .where(eq(notifications.userId, userId))
+            .where(conditions)
             .orderBy(desc(notifications.createdAt))
-            .limit(50)
+            .limit(limit)
+
+        let nextCursor: string | undefined = undefined
+        if (data.length === limit) {
+            nextCursor = data[data.length - 1].createdAt.toISOString()
+        }
+
+        return {
+            data,
+            nextCursor
+        }
     }
 
     static async markAsRead(notificationId: string, userId: string) {

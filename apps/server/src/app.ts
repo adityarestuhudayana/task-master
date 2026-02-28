@@ -37,19 +37,21 @@ export const httpServer: HttpServer = createServer(app)
 
 // ─── Middleware ──────────────────────────────────
 app.set("trust proxy", 1)
-app.use(helmet())
-app.use(
-    rateLimit({
-        windowMs: 15 * 60 * 1000,
-        limit: 100,
-        standardHeaders: "draft-7",
-        legacyHeaders: false,
-    }),
-)
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN || "http://localhost:5173",
         credentials: true,
+    }),
+)
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}))
+app.use(
+    rateLimit({
+        windowMs: 15 * 60 * 1000,
+        limit: 1000, // Relaxed for development
+        standardHeaders: "draft-7",
+        legacyHeaders: false,
     }),
 )
 

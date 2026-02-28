@@ -156,14 +156,14 @@ function SortableCard({ card, onClick }: { card: CardData; onClick: () => void }
                     {card.done ? (
                         <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
                     ) : (
-                        <button className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary transition-opacity">
+                        <button className="opacity-40 group-hover:opacity-100 text-slate-400 hover:text-primary transition-opacity">
                             <Pencil size={16} />
                         </button>
                     )}
                     <div
                         {...attributes}
                         {...listeners}
-                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-opacity p-0.5"
+                        className="opacity-70 group-hover:opacity-100 text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-opacity p-0.5"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <GripVertical size={16} />

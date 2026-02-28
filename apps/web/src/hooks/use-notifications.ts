@@ -1,13 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/lib/api"
 
 export function useNotifications() {
-    return useQuery({
+    return useInfiniteQuery({
         queryKey: ["notifications"],
-        queryFn: async () => {
-            const { data } = await api.get("/notifications")
+        queryFn: async ({ pageParam }) => {
+            const url = pageParam ? `/notifications?cursor=${pageParam}` : "/notifications"
+            const { data } = await api.get(url)
             return data
         },
+        initialPageParam: undefined as string | undefined,
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
         refetchInterval: 30000, // Refetch every 30s
     })
 }

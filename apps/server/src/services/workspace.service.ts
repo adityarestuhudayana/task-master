@@ -27,12 +27,16 @@ export class WorkspaceService {
     }
 
     static async createWorkspace(data: CreateWorkspaceInput, userId: string) {
+        const { nanoid } = await import("nanoid")
+        const code = nanoid(10)
+
         const [workspace] = await db
             .insert(workspaces)
             .values({
                 name: data.name,
                 description: data.description,
                 ownerId: userId,
+                inviteCode: code,
             })
             .returning()
 
@@ -60,69 +64,61 @@ export class WorkspaceService {
         await db.delete(workspaces).where(eq(workspaces.id, workspaceId))
     }
 
-    static async inviteMember(workspaceId: string, data: InviteMemberInput, inviterName: string) {
-        const [user] = await db.select().from(users).where(eq(users.email, data.email))
-        const [workspace] = await db.select().from(workspaces).where(eq(workspaces.id, workspaceId))
-
-        if (!workspace) throw AppError.notFound("Workspace not found")
-
-        if (user) {
-            const [existing] = await db
-                .select()
-                .from(workspaceMembers)
-                .where(
-                    and(
-                        eq(workspaceMembers.workspaceId, workspaceId),
-                        eq(workspaceMembers.userId, user.id),
-                    ),
+    static async regenerateInviteCode(workspaceId: string, userId: string) {
+        const [membership] = await db
+            .select()
+            .from(workspaceMembers)
+            .where(
+                and(
+                    eq(workspaceMembers.workspaceId, workspaceId),
+                    eq(workspaceMembers.userId, userId)
                 )
+            )
 
-            if (existing) throw AppError.conflict("User is already a member")
-
-            const [member] = await db
-                .insert(workspaceMembers)
-                .values({
-                    workspaceId,
-                    userId: user.id,
-                    role: "member",
-                })
-                .returning()
-
-            sendWorkspaceInvite({
-                email: data.email,
-                workspaceName: workspace.name,
-                inviteLink: `${process.env.CORS_ORIGIN || "http://localhost:5173"}/dashboard`,
-                inviterName,
-            })
-
-            return member
+        if (!membership || membership.role !== "owner" && membership.role !== "admin") {
+            throw AppError.forbidden("Only admins can regenerate the invite code")
         }
 
-        const token = randomUUID()
-        const expiresAt = new Date()
-        expiresAt.setDate(expiresAt.getDate() + 7)
+        const { nanoid } = await import("nanoid")
+        const newCode = nanoid(10)
 
-        const [invitation] = await db
-            .insert(workspaceInvitations)
-            .values({
-                workspaceId,
-                email: data.email,
-                token,
-                expiresAt,
-                role: "member",
-            })
+        const [updated] = await db
+            .update(workspaces)
+            .set({ inviteCode: newCode, updatedAt: new Date() })
+            .where(eq(workspaces.id, workspaceId))
             .returning()
 
-        const inviteLink = `${process.env.CORS_ORIGIN || "http://localhost:5173"}/signup?token=${token}&email=${encodeURIComponent(data.email)}`
+        return { inviteCode: updated.inviteCode }
+    }
 
-        sendWorkspaceInvite({
-            email: data.email,
-            workspaceName: workspace.name,
-            inviteLink,
-            inviterName,
-        })
+    static async joinWorkspace(inviteCode: string, userId: string) {
+        const [workspace] = await db.select().from(workspaces).where(eq(workspaces.inviteCode, inviteCode))
 
-        return { message: "Invitation sent", invitationId: invitation.id }
+        if (!workspace) throw AppError.notFound("Invalid invite link")
+
+        const [existing] = await db
+            .select()
+            .from(workspaceMembers)
+            .where(
+                and(
+                    eq(workspaceMembers.workspaceId, workspace.id),
+                    eq(workspaceMembers.userId, userId),
+                ),
+            )
+
+        if (existing) {
+            return { workspaceId: workspace.id, message: "Already a member" }
+        }
+
+        await db
+            .insert(workspaceMembers)
+            .values({
+                workspaceId: workspace.id,
+                userId: userId,
+                role: "member",
+            })
+
+        return { workspaceId: workspace.id, message: "Successfully joined workspace" }
     }
 
     static async getWorkspaceMembers(workspaceId: string) {

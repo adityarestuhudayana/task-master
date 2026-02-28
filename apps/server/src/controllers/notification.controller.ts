@@ -4,7 +4,11 @@ import { NotificationService } from "../services/notification.service.js"
 export class NotificationController {
     static async getNotifications(req: Request, res: Response, next: NextFunction) {
         try {
-            const notifications = await NotificationService.getNotifications(req.user!.id)
+            const cursor = req.query.cursor as string | undefined
+            const limitStr = req.query.limit as string | undefined
+            const limit = limitStr ? parseInt(limitStr, 10) : 20
+
+            const notifications = await NotificationService.getNotifications(req.user!.id, cursor, limit)
             res.json(notifications)
         } catch (error) {
             next(error)

@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
 import { Logo } from "@/components/common/logo"
-import { ThemeToggle } from "@/components/common/theme-toggle"
 import { useUIStore } from "@/stores/ui-store"
 import { useWorkspaces } from "@/hooks/use-workspaces"
 import {
@@ -116,10 +115,6 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
 
             {/* Bottom Section */}
             <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-3 flex-shrink-0">
-                <div className="flex items-center justify-between px-3">
-                    <span className="text-xs font-medium text-slate-500">Theme</span>
-                    <ThemeToggle />
-                </div>
                 <Link
                     to="/settings"
                     onClick={onNavigate}

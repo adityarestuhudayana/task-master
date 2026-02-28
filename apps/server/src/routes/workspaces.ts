@@ -5,7 +5,6 @@ import { WorkspaceController } from "../controllers/workspace.controller.js"
 import {
     createWorkspaceSchema,
     updateWorkspaceSchema,
-    inviteMemberSchema,
     updateMemberRoleSchema,
     createLabelSchema,
 } from "../schema/workspace.schema.js"
@@ -25,8 +24,11 @@ router.patch("/:id", validateBody(updateWorkspaceSchema), WorkspaceController.up
 // DELETE /api/workspaces/:id
 router.delete("/:id", WorkspaceController.deleteWorkspace)
 
-// POST /api/workspaces/:id/invite — invite member by email
-router.post("/:id/invite", validateBody(inviteMemberSchema), WorkspaceController.inviteMember)
+// POST /api/workspaces/:id/invite-code — regenerate invite code
+router.post("/:id/invite-code", WorkspaceController.regenerateInviteCode)
+
+// POST /api/workspaces/join/:inviteCode — join workspace via code
+router.post("/join/:inviteCode", WorkspaceController.joinWorkspace)
 
 // GET /api/workspaces/:id/members
 router.get("/:id/members", WorkspaceController.getWorkspaceMembers)
