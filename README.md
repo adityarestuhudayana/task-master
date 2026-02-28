@@ -1,15 +1,5 @@
 # TaskMaster
 
-> [!WARNING]
-> **Penting**: Fitur pendaftaran (Sign-up) memerlukan konfigurasi SMTP yang aktif untuk verifikasi email. Jika SMTP tidak dikonfigurasi, Anda tidak akan bisa melakukan pendaftaran baru. 
-> 
-> Sebagai alternatif, gunakan salah satu dari **5 Akun Demo** berikut (Password: `password123`):
-> - `budi@indo.com`
-> - `siti@indo.com`
-> - `joko@indo.com`
-> - `dewi@indo.com`
-> - `agus@indo.com`
-
 TaskMaster adalah platform manajemen tugas (task management) kolaboratif modern yang dirancang untuk membantu tim merencanakan, melacak, dan mengelola pekerjaan secara efisien dalam satu tempat.
 
 ## ️ Stack Teknologi
