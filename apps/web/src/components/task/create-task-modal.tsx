@@ -161,7 +161,7 @@ export function CreateTaskModal() {
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={handleClose}
             />
-            <div className="relative z-10 w-full max-w-3xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative z-10 w-full max-w-3xl max-h-[95vh] md:max-h-[85vh] bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -176,9 +176,9 @@ export function CreateTaskModal() {
                 </div>
 
                 {/* Body - Two Columns */}
-                <div className="flex flex-col md:flex-row h-full max-h-[70vh] overflow-hidden">
+                <div className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden">
                     {/* Left Column - Main Content */}
-                    <div className="flex-1 px-6 py-5 space-y-5 overflow-y-auto custom-scrollbar border-r border-slate-100 dark:border-slate-700">
+                    <div className="flex-1 px-4 sm:px-6 py-5 space-y-5 md:overflow-y-auto custom-scrollbar md:border-r border-slate-100 dark:border-slate-700">
                         {/* Title */}
                         <div>
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -209,7 +209,7 @@ export function CreateTaskModal() {
                     </div>
 
                     {/* Right Column - Sidebar / Properties */}
-                    <div className="w-full md:w-72 bg-slate-50/50 dark:bg-slate-900/30 px-6 py-5 space-y-6 overflow-y-auto custom-scrollbar">
+                    <div className="w-full md:w-72 bg-slate-50/50 md:bg-slate-50/30 dark:bg-slate-900/30 px-4 sm:px-6 py-5 space-y-6 md:overflow-y-auto custom-scrollbar border-t md:border-t-0 border-slate-100 dark:border-slate-700">
                         {/* Assignees */}
                         <div className="relative">
                             <div className="flex items-center gap-2 mb-2">
@@ -265,7 +265,7 @@ export function CreateTaskModal() {
                                         className="fixed inset-0 z-40"
                                         onClick={() => setShowAssignees(false)}
                                     />
-                                    <div className="absolute top-full right-0 mt-2 z-50 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                    <div className="absolute top-full left-0 md:left-auto md:right-0 mt-2 z-50 w-[calc(100vw-4rem)] sm:w-72 md:w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                                         <div className="p-3 border-b border-slate-100 dark:border-slate-700">
                                             <div className="relative">
                                                 <Search
@@ -369,7 +369,7 @@ export function CreateTaskModal() {
                                         className="fixed inset-0 z-40"
                                         onClick={() => { setShowLabels(false); setShowCreateLabel(false) }}
                                     />
-                                    <div className="absolute top-full right-0 mt-2 z-50 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                    <div className="absolute top-full left-0 md:left-auto md:right-0 mt-2 z-50 w-[calc(100vw-4rem)] sm:w-72 md:w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                                         {!showCreateLabel ? (
                                             <>
                                                 <div className="p-3 border-b border-slate-100 dark:border-slate-700">

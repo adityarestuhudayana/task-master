@@ -6,6 +6,7 @@ import {
     closestCorners,
     KeyboardSensor,
     PointerSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     useDroppable,
@@ -137,8 +138,10 @@ function SortableCard({ card, onClick }: { card: CardData; onClick: () => void }
         <div
             ref={setNodeRef}
             style={style}
+            {...attributes}
+            {...listeners}
             className={cn(
-                "group bg-white dark:bg-surface-dark p-4 rounded-lg shadow-sm cursor-pointer transition-all",
+                "group bg-white dark:bg-surface-dark p-4 rounded-lg shadow-sm cursor-pointer transition-all touch-none",
                 isDragging && "opacity-50 shadow-lg ring-2 ring-primary/30",
                 card.highlighted
                     ? "border-l-4 border-l-primary border-t border-r border-b border-slate-200 dark:border-slate-700 hover:shadow-md"
@@ -160,14 +163,6 @@ function SortableCard({ card, onClick }: { card: CardData; onClick: () => void }
                             <Pencil size={16} />
                         </button>
                     )}
-                    <div
-                        {...attributes}
-                        {...listeners}
-                        className="opacity-70 group-hover:opacity-100 text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-opacity p-0.5"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <GripVertical size={16} />
-                    </div>
                 </div>
             </div>
             <h4
@@ -230,10 +225,12 @@ function KanbanColumn({
     column,
     openTaskDetail,
     openCreateTask,
+    isDragInProgress,
 }: {
     column: ColumnData
     openTaskDetail: (id: string) => void
     openCreateTask: (id: string) => void
+    isDragInProgress?: boolean
 }) {
     const { setNodeRef } = useDroppable({
         id: column.id,
@@ -242,7 +239,10 @@ function KanbanColumn({
     return (
         <div
             ref={setNodeRef}
-            className="flex flex-col h-full bg-column-light dark:bg-column-dark rounded-xl border border-slate-200/50 dark:border-slate-700/50 w-[85vw] sm:w-[320px] md:w-auto shrink-0 snap-center md:snap-none"
+            className={cn(
+                "flex flex-col h-full bg-column-light dark:bg-column-dark rounded-xl border border-slate-200/50 dark:border-slate-700/50 w-[85vw] sm:w-[320px] md:w-auto shrink-0 transition-opacity",
+                !isDragInProgress && "snap-center md:snap-none"
+            )}
         >
             {/* Column Header */}
             <div className="p-4 pb-2 flex items-center justify-between">
@@ -255,9 +255,6 @@ function KanbanColumn({
                         {column.cards.length}
                     </span>
                 </div>
-                <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                    <MoreHorizontal size={18} />
-                </button>
             </div>
 
             {/* Sortable Cards */}
@@ -346,6 +343,7 @@ export function BoardPage() {
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+        useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
     )
 
@@ -534,13 +532,17 @@ export function BoardPage() {
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <div className="flex-1 flex flex-nowrap md:grid md:grid-cols-3 gap-4 md:gap-6 min-h-0 pb-4 overflow-x-auto snap-x snap-mandatory custom-scrollbar items-stretch">
+                <div className={cn(
+                    "flex-1 flex flex-nowrap md:grid md:grid-cols-3 gap-4 md:gap-6 min-h-0 pb-4 overflow-x-auto custom-scrollbar items-stretch",
+                    !activeCard && "snap-x snap-mandatory"
+                )}>
                     {filteredColumns.map((column) => (
                         <KanbanColumn
                             key={column.id}
                             column={column}
                             openTaskDetail={openTaskDetail}
                             openCreateTask={openCreateTask}
+                            isDragInProgress={!!activeCard}
                         />
                     ))}
                 </div>
