@@ -3,7 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "../db/index.js"
 import * as schema from "../db/schema.js"
 import { eq } from "drizzle-orm"
-import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/mailer.js"
+import { env } from "../env.js"
 
 export const auth = betterAuth({
     baseURL: (process.env.BETTER_AUTH_URL || "http://localhost:3000") + "/api/auth",
@@ -27,34 +27,10 @@ export const auth = betterAuth({
             partitioned: true,
         },
     },
-    emailAndPassword: {
-        enabled: true,
-        requireEmailVerification: true,
-        sendResetPassword: async (args) => {
-            console.log("🛠️ sendResetPassword args:", JSON.stringify(args, null, 2))
-            const { user, token } = args;
-            const frontendUrl = `${process.env.CORS_ORIGIN || "http://localhost:5173"}/reset-password?token=${token}`
-
-            sendPasswordResetEmail({
-                email: user.email,
-                url: frontendUrl,
-            })
-        },
-    },
-    emailVerification: {
-        sendOnSignUp: true,
-        autoSignInAfterVerification: true,
-        sendVerificationEmail: async ({ user, url }) => {
-            // Construct the frontend verification URL
-            // The 'url' from better-auth points to the backend endpoint
-            // We want it to point to our frontend VerifyEmailPage
-            const token = new URL(url).searchParams.get("token")
-            const frontendUrl = `${process.env.CORS_ORIGIN || "http://localhost:5173"}/verify-email?token=${token}`
-
-            sendVerificationEmail({
-                email: user.email,
-                url: frontendUrl,
-            })
+    socialProviders: {
+        google: {
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
         },
     },
     session: {

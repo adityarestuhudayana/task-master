@@ -25,34 +25,17 @@ export function useDashboardData() {
     })
 }
 
-export function useLogin() {
-    const qc = useQueryClient()
+export function useGoogleLogin() {
     return useMutation({
-        mutationFn: async (body: { email: string; password: string }) => {
-            const { data } = await api.post("/auth/sign-in/email", body)
+        mutationFn: async () => {
+            const { data } = await api.post("/auth/sign-in/social", {
+                provider: "google",
+                callbackURL: `${window.location.origin}/dashboard`
+            })
+            if (data?.url) {
+                window.location.href = data.url
+            }
             return data
-        },
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["auth"] })
-            qc.invalidateQueries({ queryKey: ["workspaces"] })
-            qc.invalidateQueries({ queryKey: ["boards"] })
-            qc.invalidateQueries({ queryKey: ["activity"] })
-        },
-    })
-}
-
-export function useSignup() {
-    const qc = useQueryClient()
-    return useMutation({
-        mutationFn: async (body: { name: string; email: string; password: string }) => {
-            const { data } = await api.post("/auth/sign-up/email", body)
-            return data
-        },
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["auth"] })
-            qc.invalidateQueries({ queryKey: ["workspaces"] })
-            qc.invalidateQueries({ queryKey: ["boards"] })
-            qc.invalidateQueries({ queryKey: ["activity"] })
         },
     })
 }
@@ -72,35 +55,6 @@ export function useLogout() {
     })
 }
 
-export function useVerifyEmail() {
-    const qc = useQueryClient()
-    return useMutation({
-        mutationFn: async (token: string) => {
-            const { data } = await api.get(`/auth/verify-email?token=${token}`)
-            return data
-        },
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["auth"] })
-        },
-    })
-}
-
-export function useForgotPassword() {
-    return useMutation({
-        mutationFn: async (email: string) => {
-            await api.post("/auth/request-password-reset", { email, redirectTo: "/reset-password" })
-        },
-    })
-}
-
-export function useResetPassword() {
-    return useMutation({
-        mutationFn: async ({ password, token }: { password: string; token: string }) => {
-            await api.post("/auth/reset-password", { newPassword: password, token })
-        },
-    })
-}
-
 export function useUpdateProfile() {
     const qc = useQueryClient()
     return useMutation({
@@ -113,15 +67,6 @@ export function useUpdateProfile() {
             qc.invalidateQueries({ queryKey: ["workspaces"] })
             qc.invalidateQueries({ queryKey: ["boards"] })
             qc.invalidateQueries({ queryKey: ["board"] })
-        },
-    })
-}
-
-export function useChangePassword() {
-    return useMutation({
-        mutationFn: async (body: { currentPassword: string; newPassword: string }) => {
-            const { data } = await api.post("/auth/change-password", body)
-            return data
         },
     })
 }

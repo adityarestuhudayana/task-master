@@ -13,9 +13,6 @@ import { BoardPage } from "@/pages/board"
 import { SettingsPage } from "@/pages/settings"
 import { NotFoundPage } from "@/pages/not-found"
 import { WorkspacePage } from "@/pages/workspace"
-import { VerifyEmailPage } from "@/pages/verify-email"
-import { ForgotPasswordPage } from "@/pages/forgot-password"
-import { ResetPasswordPage } from "@/pages/reset-password"
 
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { PublicRoute } from "@/components/auth/public-route"
@@ -78,9 +75,6 @@ function App() {
             <Route element={<AuthLayout />}>
               <Route path="login" element={<LoginPage />} />
               <Route path="signup" element={<SignupPage />} />
-              <Route path="verify-email" element={<VerifyEmailPage />} />
-              <Route path="forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="reset-password" element={<ResetPasswordPage />} />
             </Route>
           </Route>
 

@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { profileSchema, changePasswordSchema, type ProfileValues, type ChangePasswordValues } from "@/lib/validators"
-import { useCurrentUser, useUpdateProfile, useChangePassword, useLogout } from "@/hooks/use-auth"
+import { profileSchema, type ProfileValues } from "@/lib/validators"
+import { useCurrentUser, useUpdateProfile, useLogout } from "@/hooks/use-auth"
 import { LogOut, Camera } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState, useRef } from "react"
@@ -9,7 +9,6 @@ import { useEffect, useState, useRef } from "react"
 export function SettingsPage() {
     const { data: user } = useCurrentUser()
     const updateProfile = useUpdateProfile()
-    const changePassword = useChangePassword()
     const logout = useLogout()
     const navigate = useNavigate()
 
@@ -26,7 +25,6 @@ export function SettingsPage() {
     })
 
     const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
-    const [passwordStatus, setPasswordStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
     const [isUploading, setIsUploading] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const watchedImage = watchProfile("image")
@@ -76,17 +74,6 @@ export function SettingsPage() {
         }
     }
 
-
-
-    const {
-        register: registerPassword,
-        handleSubmit: handlePasswordSubmit,
-        reset: resetPassword,
-        formState: { errors: passwordErrors },
-    } = useForm<ChangePasswordValues>({
-        resolver: zodResolver(changePasswordSchema),
-    })
-
     const onProfileSave = async (data: ProfileValues) => {
         try {
             setStatus(null)
@@ -96,20 +83,6 @@ export function SettingsPage() {
             setTimeout(() => setStatus(null), 3000)
         } catch (err) {
             setStatus({ type: "error", message: "Failed to update profile. Please try again." })
-        }
-    }
-
-    const onPasswordChange = async (data: ChangePasswordValues) => {
-        try {
-            setPasswordStatus(null)
-            await changePassword.mutateAsync({ currentPassword: data.currentPassword, newPassword: data.newPassword })
-            setPasswordStatus({ type: "success", message: "Password updated successfully!" })
-            resetPassword()
-            setTimeout(() => setPasswordStatus(null), 3000)
-        } catch (err: any) {
-            console.error(err)
-            const errorMessage = err.response?.data?.message || err.message || "Failed to change password. Please check your current password."
-            setPasswordStatus({ type: "error", message: errorMessage })
         }
     }
 
@@ -212,70 +185,6 @@ export function SettingsPage() {
                             className="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-medium shadow-sm shadow-primary/30 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {updateProfile.isPending ? "Saving..." : "Save Changes"}
-                        </button>
-                    </div>
-                </form>
-
-                {/* Change Password */}
-                <form
-                    onSubmit={handlePasswordSubmit(onPasswordChange)}
-                    className="bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8"
-                >
-                    <div className="mb-6">
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Change Password</h2>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Ensure your account is using a long, random password to stay secure.</p>
-                    </div>
-                    <div className="grid grid-cols-1 max-w-2xl gap-6">
-                        <label className="flex flex-col gap-2">
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Current Password</span>
-                            <input
-                                type="password"
-                                {...registerPassword("currentPassword")}
-                                placeholder="••••••••••••"
-                                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white py-3 px-4 outline-none focus:ring-2 focus:ring-primary transition-shadow w-full"
-                            />
-                            {passwordErrors.currentPassword && (
-                                <span className="text-xs text-red-500">{passwordErrors.currentPassword.message}</span>
-                            )}
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <label className="flex flex-col gap-2">
-                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">New Password</span>
-                                <input
-                                    type="password"
-                                    {...registerPassword("newPassword")}
-                                    placeholder="••••••••••••"
-                                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white py-3 px-4 outline-none focus:ring-2 focus:ring-primary transition-shadow w-full"
-                                />
-                                {passwordErrors.newPassword && (
-                                    <span className="text-xs text-red-500">{passwordErrors.newPassword.message}</span>
-                                )}
-                            </label>
-                            <label className="flex flex-col gap-2">
-                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Confirm Password</span>
-                                <input
-                                    type="password"
-                                    {...registerPassword("confirmPassword")}
-                                    placeholder="••••••••••••"
-                                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white py-3 px-4 outline-none focus:ring-2 focus:ring-primary transition-shadow w-full"
-                                />
-                                {passwordErrors.confirmPassword && (
-                                    <span className="text-xs text-red-500">{passwordErrors.confirmPassword.message}</span>
-                                )}
-                            </label>
-                        </div>
-                        {passwordStatus && (
-                            <div className={`p-4 rounded-lg text-sm font-medium ${passwordStatus.type === "success"
-                                ? "bg-green-50 text-green-700 dark:bg-green-900/10 dark:text-green-400 border border-green-100 dark:border-green-900/20"
-                                : "bg-red-50 text-red-700 dark:bg-red-900/10 dark:text-red-400 border border-red-100 dark:border-red-900/20"
-                                }`}>
-                                {passwordStatus.message}
-                            </div>
-                        )}
-                    </div>
-                    <div className="flex items-center justify-end gap-4 mt-8">
-                        <button disabled={changePassword.isPending} type="submit" className="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-medium shadow-sm shadow-primary/30 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                            {changePassword.isPending ? "Updating..." : "Update Password"}
                         </button>
                     </div>
                 </form>

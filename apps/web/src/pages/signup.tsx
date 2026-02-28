@@ -1,82 +1,21 @@
-import { Link } from "react-router-dom"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { signupSchema, type SignupValues } from "@/lib/validators"
-import { useSignup } from "@/hooks/use-auth"
-import { useState, useEffect } from "react"
-import { Eye, EyeOff, CheckCircle, Mail, AlertCircle } from "lucide-react"
-import { useSearchParams } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
+import { useGoogleLogin } from "@/hooks/use-auth"
+import { useState } from "react"
+import { CheckCircle, Mail, AlertCircle } from "lucide-react"
 
 export function SignupPage() {
-    const signup = useSignup()
-    const [showPassword, setShowPassword] = useState(false)
+    const googleLogin = useGoogleLogin()
     const [apiError, setApiError] = useState("")
-    const [isSuccess, setIsSuccess] = useState(false)
     const [searchParams] = useSearchParams()
-    const invitedEmail = searchParams.get("email")
     const isInvited = !!searchParams.get("token")
 
-    const {
-        register,
-        handleSubmit,
-        setValue,
-        formState: { errors, isSubmitting },
-    } = useForm<SignupValues>({
-        resolver: zodResolver(signupSchema),
-        defaultValues: {
-            email: invitedEmail || "",
-        },
-    })
-
-    // Pre-fill email if it changes in URL
-    useEffect(() => {
-        if (invitedEmail) {
-            setValue("email", invitedEmail)
-        }
-    }, [invitedEmail, setValue])
-
-    const onSubmit = async (data: SignupValues) => {
+    const onGoogleLogin = async () => {
         setApiError("")
         try {
-            await signup.mutateAsync(data)
-            // If email verification is enabled, the sign-up succeeds but doesn't return a session
-            setIsSuccess(true)
+            await googleLogin.mutateAsync()
         } catch (err: any) {
-            if (err.response?.status === 422 && (err.response?.data?.code === "USER_ALREADY_EXISTS" || err.response?.data?.message?.includes("already exists"))) {
-                setApiError("user with this email already exists")
-            } else {
-                setApiError("Failed to create account. Please check your details and try again.")
-            }
+            setApiError("Failed to create account with Google. Please try again.")
         }
-    }
-
-    if (isSuccess) {
-        return (
-            <div className="w-full max-w-[480px] rounded-xl bg-white dark:bg-slate-800 shadow-lg p-8 sm:p-12 text-center">
-                <div className="flex flex-col items-center gap-6 py-4">
-                    <div className="h-20 w-20 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 animate-in zoom-in duration-500">
-                        <Mail size={48} />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Check your email</h1>
-                        <p className="text-slate-500 dark:text-slate-400">
-                            We've sent a verification link to your email address. Please click the link to activate your account.
-                        </p>
-                    </div>
-                    <div className="flex flex-col gap-3 w-full mt-4">
-                        <Link
-                            to="/login"
-                            className="w-full flex items-center justify-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold py-3 px-6 rounded-xl hover:opacity-90 transition-all"
-                        >
-                            Back to Login
-                        </Link>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                            Didn't receive an email? Check your spam folder or wait a few minutes.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        )
     }
 
     return (
@@ -90,7 +29,7 @@ export function SignupPage() {
                     </h1>
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                    {isInvited ? "Finish setting up your account to join the workspace" : "Create your account to get started"}
+                    {isInvited ? "Continue with Google to join the workspace" : "Create your account to get started"}
                 </p>
             </div>
 
@@ -102,97 +41,47 @@ export function SignupPage() {
                     <div>
                         <h3 className="text-sm font-bold text-blue-900 dark:text-blue-200">Workspace Invitation</h3>
                         <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
-                            We've pre-filled your email. Just choose a password to continue.
+                            Please use the same Google account as the invited email.
                         </p>
                     </div>
                 </div>
             )}
 
-            {!isSuccess && (
-                <div className="mb-8 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/50 flex gap-3">
-                    <div className="shrink-0 text-amber-600 dark:text-amber-500 mt-0.5">
-                        <AlertCircle size={20} />
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">Pendaftaran Terbatas</h3>
-                        <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-1 leading-relaxed">
-                            Sign-up memerlukan verifikasi email (SMTP). Jika tidak aktif, gunakan akun demo:
-                            <span className="block mt-1 font-mono bg-amber-100/50 dark:bg-amber-900/30 px-1 py-0.5 rounded text-[10px]">
-                                budi@indo.com (PW: password123)
-                            </span>
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+            {/* Main Auth Action */}
+            <div className="space-y-4">
                 {apiError && (
                     <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
                         {apiError}
                     </div>
                 )}
-                {/* Full Name */}
-                <label className="flex flex-col gap-1.5">
-                    <span className="text-slate-900 dark:text-slate-200 text-sm font-medium">Full Name</span>
-                    <input
-                        type="text"
-                        {...register("name")}
-                        placeholder="John Doe"
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
-                    />
-                    {errors.name && (
-                        <span className="text-xs text-red-500">{errors.name.message}</span>
-                    )}
-                </label>
 
-                {/* Email */}
-                <label className="flex flex-col gap-1.5">
-                    <span className="text-slate-900 dark:text-slate-200 text-sm font-medium">Email Address</span>
-                    <input
-                        type="email"
-                        autoComplete="email"
-                        {...register("email")}
-                        placeholder="name@company.com"
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
-                    />
-                    {errors.email && (
-                        <span className="text-xs text-red-500">{errors.email.message}</span>
-                    )}
-                </label>
-
-                {/* Password */}
-                <label className="flex flex-col gap-1.5">
-                    <span className="text-slate-900 dark:text-slate-200 text-sm font-medium">Password</span>
-                    <div className="relative">
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            {...register("password")}
-                            placeholder="••••••••"
-                            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                        >
-                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                        </button>
-                    </div>
-                    {errors.password && (
-                        <span className="text-xs text-red-500">{errors.password.message}</span>
-                    )}
-                </label>
-
-                {/* Submit */}
                 <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="mt-2 w-full rounded-lg bg-primary py-3.5 text-sm font-bold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-50"
+                    onClick={onGoogleLogin}
+                    disabled={googleLogin.isPending}
+                    className="w-full flex justify-center items-center py-3 px-4 border border-slate-200 dark:border-slate-600 rounded-lg shadow-sm text-sm font-bold text-slate-700 dark:text-white bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200 disabled:opacity-50"
                 >
-                    Create Account
+                    <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                        <path
+                            fill="currentColor"
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        />
+                        <path
+                            fill="#34A853"
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        />
+                        <path
+                            fill="#FBBC05"
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        />
+                        <path
+                            fill="#EA4335"
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        />
+                        <path fill="none" d="M1 1h22v22H1z" />
+                    </svg>
+                    Continue with Google
                 </button>
-            </form>
+            </div>
 
             {/* Footer */}
             <div className="mt-6 text-center">
