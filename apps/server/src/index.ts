@@ -1,5 +1,6 @@
 import { httpServer, io } from "./app.js"
 import { client } from "./db/index.js"
+import { env } from "./env.js"
 import "dotenv/config"
 
 const PORT = Number(process.env.PORT) || 3000
@@ -7,7 +8,7 @@ const PORT = Number(process.env.PORT) || 3000
 const server = httpServer.listen(PORT, () => {
     console.log(`🚀 TaskMaster API running on http://localhost:${PORT}`)
     console.log(`📡 WebSocket server ready`)
-    console.log(`🔑 Better Auth at http://localhost:${PORT}/api/auth`)
+    console.log(`🔑 Better Auth at ${env.BETTER_AUTH_URL}/api/auth`)
 })
 
 // Graceful Shutdown Options

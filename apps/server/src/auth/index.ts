@@ -6,7 +6,9 @@ import { eq } from "drizzle-orm"
 import { env } from "../env.js"
 
 export const auth = betterAuth({
-    baseURL: (process.env.BETTER_AUTH_URL || "http://localhost:3000") + "/api/auth",
+    baseURL: env.BETTER_AUTH_URL.endsWith("/")
+        ? `${env.BETTER_AUTH_URL}api/auth`
+        : `${env.BETTER_AUTH_URL}/api/auth`,
     database: drizzleAdapter(db, {
         provider: "pg",
         schema: {
@@ -24,7 +26,6 @@ export const auth = betterAuth({
             sameSite: "none",
             secure: true,
             httpOnly: true,
-            partitioned: true,
         },
         trustProxy: true,
     },
