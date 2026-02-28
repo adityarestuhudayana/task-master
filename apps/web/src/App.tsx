@@ -19,6 +19,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route"
 import { PublicRoute } from "@/components/auth/public-route"
 import { useCurrentUser } from "@/hooks/use-auth"
 import { connectSocket, disconnectSocket } from "@/lib/socket"
+import { toast } from "sonner"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,11 +60,38 @@ function SocketManager() {
   return null
 }
 
+function GlobalErrorHandler() {
+  useEffect(() => {
+    const handleApiError = (event: Event) => {
+      const customEvent = event as CustomEvent
+      toast.error(customEvent.detail.message || "Terjadi kesalahan pada server")
+    }
+
+    const handleUnauthorized = () => {
+      // Force reload to login page if unauthorized
+      if (window.location.pathname !== "/login" && window.location.pathname !== "/signup" && window.location.pathname !== "/") {
+        window.location.href = `/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`
+      }
+    }
+
+    window.addEventListener("api:error", handleApiError)
+    window.addEventListener("auth:unauthorized", handleUnauthorized)
+
+    return () => {
+      window.removeEventListener("api:error", handleApiError)
+      window.removeEventListener("auth:unauthorized", handleUnauthorized)
+    }
+  }, [])
+
+  return null
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeInitializer />
       <SocketManager />
+      <GlobalErrorHandler />
       <BrowserRouter>
         <Routes>
           {/* Public routes */}

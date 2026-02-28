@@ -1,22 +1,15 @@
-import type { Request, Response, NextFunction } from "express"
+import type { Request, Response } from "express"
+import asyncHandler from "express-async-handler"
 import { UserService } from "../services/user.service.js"
 
 export class UserController {
-    static async updateProfile(req: Request, res: Response, next: NextFunction) {
-        try {
-            const updated = await UserService.updateProfile(req.user!.id, req.body)
-            res.json(updated)
-        } catch (error) {
-            next(error)
-        }
-    }
+    static updateProfile = asyncHandler(async (req: Request, res: Response) => {
+        const updated = await UserService.updateProfile(req.user!.id, req.body)
+        res.json(updated)
+    })
 
-    static async getDashboardData(req: Request, res: Response, next: NextFunction) {
-        try {
-            const dashboardData = await UserService.getDashboardData(req.user!.id)
-            res.json(dashboardData)
-        } catch (error) {
-            next(error)
-        }
-    }
+    static getDashboardData = asyncHandler(async (req: Request, res: Response) => {
+        const dashboardData = await UserService.getDashboardData(req.user!.id)
+        res.json(dashboardData)
+    })
 }

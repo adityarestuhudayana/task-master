@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import {
     DndContext,
@@ -208,6 +208,9 @@ function SortableCard({ card, onClick }: { card: CardData; onClick: () => void }
     )
 }
 
+// Wrap in React.memo to prevent unnecessary re-renders when other cards are dragged
+const MemoizedSortableCard = React.memo(SortableCard)
+
 // Card overlay for drag
 function CardOverlay({ card }: { card: CardData }) {
     return (
@@ -264,7 +267,7 @@ function KanbanColumn({
             >
                 <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3 custom-scrollbar">
                     {column.cards.map((card) => (
-                        <SortableCard
+                        <MemoizedSortableCard
                             key={card.id}
                             card={card}
                             onClick={() => openTaskDetail(card.id)}

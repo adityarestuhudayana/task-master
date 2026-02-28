@@ -6,6 +6,8 @@ import { WorkspaceSettingsModal } from "@/components/workspace/workspace-setting
 import { TaskDetailModal } from "@/components/task/task-detail-modal"
 import { CreateTaskModal } from "@/components/task/create-task-modal"
 import { InviteMembersModal } from "@/components/workspace/invite-members-modal"
+import { ErrorBoundary } from "react-error-boundary"
+import { GlobalErrorFallback } from "@/components/ui/error-fallback"
 
 export function AppLayout() {
     return (
@@ -17,7 +19,9 @@ export function AppLayout() {
             <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <TopNav />
                 <div className="flex-1 overflow-y-auto">
-                    <Outlet />
+                    <ErrorBoundary FallbackComponent={GlobalErrorFallback} onReset={() => window.location.reload()}>
+                        <Outlet />
+                    </ErrorBoundary>
                 </div>
             </main>
 

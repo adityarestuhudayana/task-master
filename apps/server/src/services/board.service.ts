@@ -79,23 +79,39 @@ export class BoardService {
                 .orderBy(tasks.position)
         }
 
-        const enrichedTasks = await Promise.all(
-            allTasks.map(async (task) => {
-                const assignees = await db
-                    .select({ id: users.id, name: users.name, email: users.email, image: users.image })
-                    .from(taskAssignees)
-                    .innerJoin(users, eq(taskAssignees.userId, users.id))
-                    .where(eq(taskAssignees.taskId, task.id))
+        const taskIds = allTasks.map(t => t.id)
+        let allAssignees: { taskId: string, user: { id: string, name: string | null, email: string, image: string | null } }[] = []
+        let allLabels: { taskId: string, label: { id: string, name: string, color: string } }[] = []
 
-                const taskLabelsList = await db
-                    .select({ id: labels.id, name: labels.name, color: labels.color })
-                    .from(taskLabels)
-                    .innerJoin(labels, eq(taskLabels.labelId, labels.id))
-                    .where(eq(taskLabels.taskId, task.id))
+        if (taskIds.length > 0) {
+            allAssignees = await db
+                .select({
+                    taskId: taskAssignees.taskId,
+                    user: { id: users.id, name: users.name, email: users.email, image: users.image }
+                })
+                .from(taskAssignees)
+                .innerJoin(users, eq(taskAssignees.userId, users.id))
+                .where(sql`${taskAssignees.taskId} IN ${taskIds}`)
 
-                return { ...task, assignees, labels: taskLabelsList }
-            }),
-        )
+            allLabels = await db
+                .select({
+                    taskId: taskLabels.taskId,
+                    label: { id: labels.id, name: labels.name, color: labels.color }
+                })
+                .from(taskLabels)
+                .innerJoin(labels, eq(taskLabels.labelId, labels.id))
+                .where(sql`${taskLabels.taskId} IN ${taskIds}`)
+        }
+
+        const enrichedTasks = allTasks.map(task => {
+            const taskAssigneeList = allAssignees.filter(a => a.taskId === task.id).map(a => a.user)
+            const taskLabelList = allLabels.filter(l => l.taskId === task.id).map(l => l.label)
+            return {
+                ...task,
+                assignees: taskAssigneeList,
+                labels: taskLabelList
+            }
+        })
 
         const columnsWithTasks = cols.map((col) => ({
             ...col,

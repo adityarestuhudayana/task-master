@@ -1,88 +1,53 @@
-import type { Request, Response, NextFunction } from "express"
+import type { Request, Response } from "express"
+import asyncHandler from "express-async-handler"
 import { TaskService } from "../services/task.service.js"
 
 export class TaskController {
-    static async createTask(req: Request, res: Response, next: NextFunction) {
-        try {
-            const io = req.app.get("io")
-            const task = await TaskService.createTask(req.params.cId as string, req.body, req.user!.id, io)
-            res.status(201).json(task)
-        } catch (error) {
-            next(error)
-        }
-    }
+    static createTask = asyncHandler(async (req: Request, res: Response) => {
+        const io = req.app.get("io")
+        const task = await TaskService.createTask(req.params.cId as string, req.body, req.user!.id, io)
+        res.status(201).json(task)
+    })
 
-    static async getTaskById(req: Request, res: Response, next: NextFunction) {
-        try {
-            const task = await TaskService.getTaskById(req.params.id as string)
-            res.json(task)
-        } catch (error) {
-            next(error)
-        }
-    }
+    static getTaskById = asyncHandler(async (req: Request, res: Response) => {
+        const task = await TaskService.getTaskById(req.params.id as string)
+        res.json(task)
+    })
 
-    static async updateTask(req: Request, res: Response, next: NextFunction) {
-        try {
-            const io = req.app.get("io")
-            const updated = await TaskService.updateTask(req.params.id as string, req.body, req.user!.id, io)
-            res.json(updated)
-        } catch (error) {
-            next(error)
-        }
-    }
+    static updateTask = asyncHandler(async (req: Request, res: Response) => {
+        const io = req.app.get("io")
+        const updated = await TaskService.updateTask(req.params.id as string, req.body, req.user!.id, io)
+        res.json(updated)
+    })
 
-    static async deleteTask(req: Request, res: Response, next: NextFunction) {
-        try {
-            await TaskService.deleteTask(req.params.id as string)
-            res.status(204).end()
-        } catch (error) {
-            next(error)
-        }
-    }
+    static deleteTask = asyncHandler(async (req: Request, res: Response) => {
+        await TaskService.deleteTask(req.params.id as string)
+        res.status(204).end()
+    })
 
-    static async moveTask(req: Request, res: Response, next: NextFunction) {
-        try {
-            const io = req.app.get("io")
-            const updated = await TaskService.moveTask(req.params.id as string, req.body, req.user!.id, io)
-            res.json(updated)
-        } catch (error) {
-            next(error)
-        }
-    }
+    static moveTask = asyncHandler(async (req: Request, res: Response) => {
+        const io = req.app.get("io")
+        const updated = await TaskService.moveTask(req.params.id as string, req.body, req.user!.id, io)
+        res.json(updated)
+    })
 
-    static async addAssignee(req: Request, res: Response, next: NextFunction) {
-        try {
-            const assignee = await TaskService.addAssignee(req.params.id as string, req.body.userId, req.user!.id)
-            res.status(201).json(assignee)
-        } catch (error) {
-            next(error)
-        }
-    }
+    static addAssignee = asyncHandler(async (req: Request, res: Response) => {
+        const assignee = await TaskService.addAssignee(req.params.id as string, req.body.userId, req.user!.id)
+        res.status(201).json(assignee)
+    })
 
-    static async removeAssignee(req: Request, res: Response, next: NextFunction) {
-        try {
-            await TaskService.removeAssignee(req.params.id as string, req.params.userId as string)
-            res.status(204).end()
-        } catch (error) {
-            next(error)
-        }
-    }
+    static removeAssignee = asyncHandler(async (req: Request, res: Response) => {
+        await TaskService.removeAssignee(req.params.id as string, req.params.userId as string)
+        res.status(204).end()
+    })
 
-    static async addLabel(req: Request, res: Response, next: NextFunction) {
-        try {
-            const label = await TaskService.addLabel(req.params.id as string, req.body.labelId)
-            res.status(201).json(label)
-        } catch (error) {
-            next(error)
-        }
-    }
+    static addLabel = asyncHandler(async (req: Request, res: Response) => {
+        const label = await TaskService.addLabel(req.params.id as string, req.body.labelId)
+        res.status(201).json(label)
+    })
 
-    static async removeLabel(req: Request, res: Response, next: NextFunction) {
-        try {
-            await TaskService.removeLabel(req.params.id as string, req.params.labelId as string)
-            res.status(204).end()
-        } catch (error) {
-            next(error)
-        }
-    }
+    static removeLabel = asyncHandler(async (req: Request, res: Response) => {
+        await TaskService.removeLabel(req.params.id as string, req.params.labelId as string)
+        res.status(204).end()
+    })
 }

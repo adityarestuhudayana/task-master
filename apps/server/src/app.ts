@@ -17,6 +17,7 @@ import cors from "cors"
 import { createServer, type Server as HttpServer } from "http"
 import helmet from "helmet"
 import rateLimit from "express-rate-limit"
+import compression from "compression"
 import { toNodeHandler } from "better-auth/node"
 import { auth } from "./auth/index.js"
 import { setupSocketIO } from "./socket/index.js"
@@ -46,6 +47,7 @@ app.use(
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }))
+app.use(compression())
 app.use(
     rateLimit({
         windowMs: 15 * 60 * 1000,
