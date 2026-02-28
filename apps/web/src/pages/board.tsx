@@ -25,13 +25,11 @@ import { CSS } from "@dnd-kit/utilities"
 import {
     UserPlus,
     Plus,
-    MoreHorizontal,
     MessageSquare,
     Paperclip,
     Flag,
     Pencil,
     CheckCircle2,
-    GripVertical,
     Loader2,
 } from "lucide-react"
 import { cn, getUserColor } from "@/lib/utils"
